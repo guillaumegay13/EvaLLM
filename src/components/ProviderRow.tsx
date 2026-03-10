@@ -101,14 +101,14 @@ export default function ProviderRow(props: ProviderRowProps) {
         </div>
         <div class="row" style={{ "margin-top": "10px", gap: "8px" }}>
           <button
-            class="button ghost"
+            class="button primary"
             type="button"
             disabled={fetching() || !props.provider.apiKey}
             onClick={handleFetch}
           >
             {fetching() ? "Fetching..." : "Fetch models"}
           </button>
-          <button class="button ghost" type="button" onClick={() => setShowAddModel(true)}>
+          <button class="button primary" type="button" onClick={() => setShowAddModel(true)}>
             Add model manually
           </button>
         </div>

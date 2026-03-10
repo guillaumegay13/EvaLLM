@@ -68,7 +68,7 @@ export default function SettingsPage() {
         </div>
 
         <div class="row" style={{ "flex-wrap": "wrap", gap: "10px" }}>
-          <label class="button ghost" for={fileInputId}>
+          <label class="button primary" for={fileInputId}>
             Import config
           </label>
           <input
@@ -82,10 +82,10 @@ export default function SettingsPage() {
               e.currentTarget.value = "";
             }}
           />
-          <button class="button ghost" type="button" onClick={store.exportConfig}>
+          <button class="button primary" type="button" onClick={store.exportConfig}>
             Export config
           </button>
-          <button class="button ghost" type="button" onClick={store.exportResults}>
+          <button class="button primary" type="button" onClick={store.exportResults}>
             Export results
           </button>
           <button class="button ghost danger" type="button" onClick={store.resetStarterKit}>

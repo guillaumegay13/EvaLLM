@@ -37,7 +37,7 @@ export default function OverviewPage() {
           <div>
             <p class="eyebrow">Dashboard</p>
             <h2>Overview</h2>
-            <p class="muted">Run prompts across models and compare the JSON output.</p>
+            <p class="muted">Run prompts across models and compare JSON outputs.</p>
           </div>
           <div class="row">
             <button
@@ -46,7 +46,7 @@ export default function OverviewPage() {
               disabled={store.isRunning()}
               onClick={store.runBatch}
             >
-              {store.isRunning() ? "Running..." : "Run comparison"}
+              {store.isRunning() ? "Running..." : "Run"}
             </button>
             <button class="button ghost" type="button" onClick={store.clearResults}>
               Clear

@@ -19,7 +19,7 @@ export default function ProvidersPage() {
           {store.config.providers.length} provider{store.config.providers.length !== 1 ? "s" : ""},{" "}
           {store.config.models.length} model{store.config.models.length !== 1 ? "s" : ""}
         </p>
-        <button class="button ghost" type="button" onClick={() => setShowModal(true)}>
+        <button class="button primary" type="button" onClick={() => setShowModal(true)}>
           Add provider
         </button>
       </div>

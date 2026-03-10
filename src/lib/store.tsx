@@ -253,7 +253,7 @@ export function AppStoreProvider(props: ParentProps) {
     }
 
     setIsRunning(true);
-    setStatusState("Running comparison...", "warning");
+    setStatusState("Running...", "warning");
 
     try {
       const response = await fetch("/api/evaluate", {

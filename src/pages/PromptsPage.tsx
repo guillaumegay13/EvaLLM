@@ -9,7 +9,7 @@ export default function PromptsPage() {
     <>
       <div class="page-actions">
         <p class="muted">{store.config.promptCases.length} prompt{store.config.promptCases.length !== 1 ? "s" : ""}</p>
-        <button class="button ghost" type="button" onClick={store.addPromptCase}>
+        <button class="button primary" type="button" onClick={store.addPromptCase}>
           Add prompt
         </button>
       </div>

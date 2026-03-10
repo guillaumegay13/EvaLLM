@@ -74,7 +74,7 @@ export default function ResultsBoard(props: ResultsBoardProps) {
 
       <Show
         when={props.batch?.results.length}
-        fallback={<div class="empty">Run one comparison and the outputs will appear here.</div>}
+        fallback={<div class="empty">Run once and the outputs will appear here.</div>}
       >
         <div class="results-stack">
           <For each={grouped()}>

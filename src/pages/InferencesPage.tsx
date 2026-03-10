@@ -29,7 +29,7 @@ export default function InferencesPage() {
           when={store.batch()?.results.length}
           fallback={
             <div class="empty">
-              Run a comparison from the Overview page and the inference log will appear here.
+              Run from the Overview page and the inference log will appear here.
             </div>
           }
         >
