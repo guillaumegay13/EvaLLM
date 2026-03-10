@@ -58,6 +58,16 @@ const PRESETS: ProviderPreset[] = [
   },
   {
     type: "openai-compatible",
+    name: "Google Gemini",
+    hint: "Gemini 2.5 Pro, Flash, Exp",
+    logoDomain: "google.com",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+    jsonMode: "native",
+    headersJson: "",
+    keyUrl: "https://aistudio.google.com/apikey",
+  },
+  {
+    type: "openai-compatible",
     name: "DeepSeek",
     hint: "DeepSeek V3, R1",
     logoDomain: "deepseek.com",

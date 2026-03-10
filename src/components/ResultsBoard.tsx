@@ -1,5 +1,5 @@
 import { For, Show, createMemo } from "solid-js";
-import { scoreClass, usageLabel, groupResults, previewText } from "../lib/resultUtils";
+import { scoreClass, usageLabel, groupResults, previewText, durationLabel, costLabel } from "../lib/resultUtils";
 import type { BatchResponse, EvaluationResult } from "../lib/types";
 
 interface ResultsBoardProps {
@@ -27,7 +27,10 @@ function ResultCard(props: { result: EvaluationResult }) {
       </div>
 
       <div class="chips compact">
-        <span class="chip neutral">{result().durationMs} ms</span>
+        <span class="chip neutral">{durationLabel(result().durationMs)}</span>
+        <Show when={result().cost != null && result().cost! > 0}>
+          <span class="chip neutral">{costLabel(result().cost)}</span>
+        </Show>
         <span class="chip neutral">{usageLabel(result().usage)}</span>
         <Show when={result().modelSlug}>
           <span class="chip neutral">{result().modelSlug}</span>

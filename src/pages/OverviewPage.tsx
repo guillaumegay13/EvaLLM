@@ -1,7 +1,7 @@
 import { For, Show, createMemo } from "solid-js";
 import { useAppStore } from "../lib/store";
 import MetricCard from "../components/MetricCard";
-import { groupResults, scoreClass } from "../lib/resultUtils";
+import { groupResults, scoreClass, costLabel } from "../lib/resultUtils";
 
 export default function OverviewPage() {
   const store = useAppStore();
@@ -23,6 +23,16 @@ export default function OverviewPage() {
       }
     }
     return total || null;
+  });
+
+  const totalCost = createMemo(() => {
+    const results = store.batch()?.results;
+    if (!results?.length) return null;
+    let sum = 0;
+    for (const r of results) {
+      if (r.cost != null && r.cost > 0) sum += r.cost;
+    }
+    return sum > 0 ? sum : null;
   });
 
   const grouped = createMemo(() => {
@@ -62,6 +72,9 @@ export default function OverviewPage() {
           </Show>
           <Show when={totalTokens()}>
             <MetricCard label="Total tokens" value={totalTokens()!} />
+          </Show>
+          <Show when={totalCost()}>
+            <MetricCard label="Total cost" value={costLabel(totalCost())} />
           </Show>
           <Show when={store.batch()}>
             <MetricCard label="Results" value={store.batch()!.results.length} />

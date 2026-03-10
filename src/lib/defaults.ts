@@ -7,6 +7,7 @@ function createId() {
 // Stable IDs for default providers so models can reference them.
 const DEFAULT_OPENAI_PROVIDER_ID = "default-openai";
 const DEFAULT_ANTHROPIC_PROVIDER_ID = "default-anthropic";
+const DEFAULT_GEMINI_PROVIDER_ID = "default-gemini";
 const DEFAULT_OPENROUTER_PROVIDER_ID = "default-openrouter";
 
 export const sessionSchema = {
@@ -147,6 +148,15 @@ export function createDefaultProviders(): ProviderConfig[] {
       headersJson: "",
     },
     {
+      id: DEFAULT_GEMINI_PROVIDER_ID,
+      name: "Google Gemini",
+      type: "openai-compatible",
+      baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
+      apiKey: "",
+      jsonMode: "native",
+      headersJson: "",
+    },
+    {
       id: DEFAULT_OPENROUTER_PROVIDER_ID,
       name: "OpenRouter",
       type: "openai-compatible",
@@ -173,6 +183,8 @@ export function createDefaultModels(): EvalModel[] {
       name: "GPT-4.1",
       providerId: DEFAULT_OPENAI_PROVIDER_ID,
       model: "gpt-4.1",
+      inputPrice: 2.0,
+      outputPrice: 8.0,
     },
     {
       id: createId(),
@@ -180,6 +192,17 @@ export function createDefaultModels(): EvalModel[] {
       name: "Claude Sonnet",
       providerId: DEFAULT_ANTHROPIC_PROVIDER_ID,
       model: "claude-sonnet-4-20250514",
+      inputPrice: 3.0,
+      outputPrice: 15.0,
+    },
+    {
+      id: createId(),
+      enabled: false,
+      name: "Gemini 2.5 Flash",
+      providerId: DEFAULT_GEMINI_PROVIDER_ID,
+      model: "gemini-2.5-flash-preview-05-20",
+      inputPrice: 0.3,
+      outputPrice: 2.5,
     },
     {
       id: createId(),
@@ -187,6 +210,8 @@ export function createDefaultModels(): EvalModel[] {
       name: "OpenRouter Slot",
       providerId: DEFAULT_OPENROUTER_PROVIDER_ID,
       model: "openai/gpt-4.1-mini",
+      inputPrice: 0.4,
+      outputPrice: 1.6,
     },
   ];
 }

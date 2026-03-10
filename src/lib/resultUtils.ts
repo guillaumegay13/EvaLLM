@@ -1,5 +1,16 @@
 import type { EvaluationResult, GroupedPromptResults } from "./types";
 
+export function durationLabel(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)} ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+export function costLabel(cost: number | null | undefined): string {
+  if (cost == null || cost <= 0) return "n/a";
+  if (cost < 0.0001) return `$${cost.toExponential(1)}`;
+  return `$${cost.toFixed(4)}`;
+}
+
 export function scoreClass(score: number) {
   if (score >= 80) return "score high";
   if (score >= 50) return "score mid";

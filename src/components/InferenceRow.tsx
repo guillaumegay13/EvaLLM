@@ -1,5 +1,5 @@
 import { createSignal, For, Show } from "solid-js";
-import { scoreClass, usageLabel, previewText } from "../lib/resultUtils";
+import { scoreClass, usageLabel, previewText, durationLabel, costLabel } from "../lib/resultUtils";
 import type { EvaluationResult } from "../lib/types";
 
 interface InferenceRowProps {
@@ -25,7 +25,10 @@ export default function InferenceRow(props: InferenceRowProps) {
             {r().schemaOk ? "Schema" : "Drift"}
           </span>
         </div>
-        <span class="chip neutral">{r().durationMs} ms</span>
+        <span class="chip neutral">{durationLabel(r().durationMs)}</span>
+        <Show when={r().cost != null && r().cost! > 0}>
+          <span class="chip neutral">{costLabel(r().cost)}</span>
+        </Show>
         <span class={scoreClass(r().score)}>{r().score}</span>
       </div>
 

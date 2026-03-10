@@ -1,6 +1,7 @@
 import { createSignal, For, Show } from "solid-js";
 import { useAppStore } from "../lib/store";
 import type { JsonMode, ProviderConfig } from "../lib/types";
+import { lookupPricing } from "../lib/pricing";
 import AddModelModal from "./AddModelModal";
 
 interface ProviderRowProps {
@@ -32,20 +33,26 @@ export default function ProviderRow(props: ProviderRowProps) {
     }
   };
 
+  const autoFillPricing = (modelInternalId: string, slug: string) => {
+    const pricing = lookupPricing(slug);
+    if (pricing) {
+      store.updateModel(modelInternalId, "inputPrice", pricing.input);
+      store.updateModel(modelInternalId, "outputPrice", pricing.output);
+    }
+  };
+
   const toggleFetchedModel = (modelId: string, modelName: string) => {
     const existing = models().find((m) => m.model === modelId);
     if (existing) {
-      // Toggle enabled
       store.updateModel(existing.id, "enabled", !existing.enabled);
     } else {
-      // Add model to this provider
       store.addModel(props.provider.id);
-      // Find the just-added model (last in list for this provider)
       const allModels = store.modelsForProvider(props.provider.id);
       const newest = allModels[allModels.length - 1];
       if (newest) {
         store.updateModel(newest.id, "model", modelId);
         store.updateModel(newest.id, "name", modelName);
+        autoFillPricing(newest.id, modelId);
       }
     }
   };
@@ -57,6 +64,7 @@ export default function ProviderRow(props: ProviderRowProps) {
     if (newest) {
       store.updateModel(newest.id, "model", slug);
       store.updateModel(newest.id, "name", displayName);
+      autoFillPricing(newest.id, slug);
     }
   };
 
@@ -81,19 +89,32 @@ export default function ProviderRow(props: ProviderRowProps) {
       <div style={{ padding: "0 16px 12px" }}>
         <div class="chips flat">
           <For each={models()}>
-            {(model) => (
-              <span
-                class={`chip ${model.enabled ? "ok" : "neutral"}`}
-                style={{ cursor: "pointer" }}
-                onClick={() => store.updateModel(model.id, "enabled", !model.enabled)}
-                title={`${model.model} - click to toggle`}
-              >
-                {model.name || model.model || "unnamed"}
-                <span style={{ "margin-left": "4px", opacity: 0.6 }}>
-                  {model.enabled ? "On" : "Off"}
+            {(model) => {
+              const priceHint = () => {
+                if (model.inputPrice || model.outputPrice) {
+                  return `$${model.inputPrice ?? 0}/$${model.outputPrice ?? 0}`;
+                }
+                return null;
+              };
+              return (
+                <span
+                  class={`chip ${model.enabled ? "ok" : "neutral"}`}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => store.updateModel(model.id, "enabled", !model.enabled)}
+                  title={`${model.model} — in $${model.inputPrice ?? "?"}/out $${model.outputPrice ?? "?"} per 1M tok`}
+                >
+                  {model.name || model.model || "unnamed"}
+                  <Show when={priceHint()}>
+                    <span style={{ "margin-left": "4px", opacity: 0.5, "font-size": "0.8em" }}>
+                      {priceHint()}
+                    </span>
+                  </Show>
+                  <span style={{ "margin-left": "4px", opacity: 0.6 }}>
+                    {model.enabled ? "On" : "Off"}
+                  </span>
                 </span>
-              </span>
-            )}
+              );
+            }}
           </For>
           <Show when={!models().length}>
             <span class="chip neutral">No models yet</span>
@@ -250,6 +271,34 @@ export default function ProviderRow(props: ProviderRowProps) {
                             Remove
                           </button>
                         </div>
+                        <label class="field">
+                          <span>Input $/1M tokens</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={model.inputPrice ?? ""}
+                            placeholder="0.00"
+                            onInput={(e) => {
+                              const v = e.currentTarget.value;
+                              store.updateModel(model.id, "inputPrice", v ? Number(v) : undefined);
+                            }}
+                          />
+                        </label>
+                        <label class="field">
+                          <span>Output $/1M tokens</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={model.outputPrice ?? ""}
+                            placeholder="0.00"
+                            onInput={(e) => {
+                              const v = e.currentTarget.value;
+                              store.updateModel(model.id, "outputPrice", v ? Number(v) : undefined);
+                            }}
+                          />
+                        </label>
                       </div>
                     )}
                   </For>

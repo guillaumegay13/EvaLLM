@@ -245,6 +245,8 @@ export function AppStoreProvider(props: ParentProps) {
       apiKey: provider.apiKey,
       jsonMode: provider.jsonMode,
       headersJson: provider.headersJson,
+      inputPrice: model.inputPrice,
+      outputPrice: model.outputPrice,
     };
   }
 

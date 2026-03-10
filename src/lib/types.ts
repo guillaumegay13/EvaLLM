@@ -24,6 +24,8 @@ export interface EvalModel {
   name: string;
   providerId: string;
   model: string;
+  inputPrice?: number;   // cost per 1M input tokens
+  outputPrice?: number;  // cost per 1M output tokens
 }
 
 export interface PromptCase {
@@ -52,9 +54,12 @@ export interface HydratedModel {
   apiKey: string;
   jsonMode: JsonMode;
   headersJson: string;
+  inputPrice?: number;
+  outputPrice?: number;
 }
 
 export interface EvaluationResult {
+  cost?: number | null;
   durationMs: number;
   endpoint?: string;
   error: string | null;

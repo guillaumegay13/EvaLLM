@@ -609,7 +609,17 @@ async function evaluateSingle(promptCase, model, settings) {
     }
     issues.push(...validation.issues);
 
+    // Compute cost from token usage and model pricing
+    let cost = null;
+    const usage = providerResponse.usage;
+    if (usage && (model.inputPrice || model.outputPrice)) {
+      const inputTokens = Number(usage.prompt_tokens ?? usage.input_tokens ?? 0);
+      const outputTokens = Number(usage.completion_tokens ?? usage.output_tokens ?? 0);
+      cost = (inputTokens * (model.inputPrice || 0) + outputTokens * (model.outputPrice || 0)) / 1_000_000;
+    }
+
     return {
+      cost,
       durationMs: Date.now() - startedAt,
       endpoint: providerResponse.endpoint,
       error: null,
@@ -632,7 +642,7 @@ async function evaluateSingle(promptCase, model, settings) {
         issues,
       }),
       schemaOk: validation.ok,
-      usage: providerResponse.usage,
+      usage,
     };
   } catch (error) {
     return {
