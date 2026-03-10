@@ -1,0 +1,27 @@
+{
+  "name": "evallm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:ui": "vite",
+    "dev:api": "node --watch server.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start:api": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.15.4",
+    "solid-js": "^1.9.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-solid": "^2.11.6"
+  }
+}
