@@ -18,7 +18,13 @@ export default function PromptRow(props: PromptRowProps) {
           <h4>{props.promptCase.name || "Untitled prompt"}</h4>
         </div>
         <div class="table-row-meta">
-          <span class={`status-chip ${props.promptCase.enabled ? "live" : "muted"}`}>
+          <span
+            class={`status-chip ${props.promptCase.enabled ? "live" : "muted"}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              props.onUpdate("enabled", !props.promptCase.enabled);
+            }}
+          >
             {props.promptCase.enabled ? "On" : "Off"}
           </span>
         </div>
@@ -33,15 +39,6 @@ export default function PromptRow(props: PromptRowProps) {
                 type="text"
                 value={props.promptCase.name}
                 onInput={(e) => props.onUpdate("name", e.currentTarget.value)}
-              />
-            </label>
-
-            <label class="field inline-toggle">
-              <span>Include in next run</span>
-              <input
-                type="checkbox"
-                checked={props.promptCase.enabled}
-                onChange={(e) => props.onUpdate("enabled", e.currentTarget.checked)}
               />
             </label>
 

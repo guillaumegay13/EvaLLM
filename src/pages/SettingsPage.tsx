@@ -88,6 +88,9 @@ export default function SettingsPage() {
           <button class="button primary" type="button" onClick={store.exportResults}>
             Export results
           </button>
+          <button class="button primary" type="button" onClick={store.loadLocalPrompts}>
+            Load local prompts
+          </button>
           <button class="button ghost danger" type="button" onClick={store.resetStarterKit}>
             Reset starter kit
           </button>

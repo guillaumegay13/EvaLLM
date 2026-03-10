@@ -116,6 +116,7 @@ export interface AppStore {
   exportConfig: () => void;
   exportResults: () => void;
   runBatch: () => Promise<void>;
+  loadLocalPrompts: () => Promise<void>;
   fetchProviderModels: (providerId: string) => Promise<{ id: string; name: string }[]>;
   getProvider: (id: string) => ProviderConfig | undefined;
   modelsForProvider: (providerId: string) => EvalModel[];

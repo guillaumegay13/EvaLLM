@@ -2,6 +2,13 @@ import { createEffect, createSignal, Show } from "solid-js";
 import Modal from "./Modal";
 import type { JsonMode, Provider } from "../lib/types";
 
+function inferProviderType(baseUrl: string): { type: Provider; jsonMode: JsonMode } {
+  if (/anthropic\.com/i.test(baseUrl)) {
+    return { type: "anthropic", jsonMode: "prompt-only" };
+  }
+  return { type: "openai-compatible", jsonMode: "native" };
+}
+
 export interface NewProviderData {
   name: string;
   type: Provider;
@@ -32,7 +39,7 @@ const PRESETS: ProviderPreset[] = [
   {
     type: "openai-compatible",
     name: "OpenAI",
-    hint: "GPT-4.1, GPT-4o, o-series",
+    hint: "GPT-4.1, GPT-4o, o3, o4-mini",
     logoDomain: "openai.com",
     baseUrl: "https://api.openai.com/v1",
     jsonMode: "native",
@@ -42,7 +49,7 @@ const PRESETS: ProviderPreset[] = [
   {
     type: "anthropic",
     name: "Anthropic",
-    hint: "Claude Sonnet, Haiku, Opus",
+    hint: "Claude Opus 4, Sonnet 4.5, Haiku",
     logoDomain: "anthropic.com",
     baseUrl: "https://api.anthropic.com/v1",
     jsonMode: "prompt-only",
@@ -51,8 +58,38 @@ const PRESETS: ProviderPreset[] = [
   },
   {
     type: "openai-compatible",
+    name: "DeepSeek",
+    hint: "DeepSeek V3, R1",
+    logoDomain: "deepseek.com",
+    baseUrl: "https://api.deepseek.com/v1",
+    jsonMode: "native",
+    headersJson: "",
+    keyUrl: "https://platform.deepseek.com/api_keys",
+  },
+  {
+    type: "openai-compatible",
+    name: "Mistral AI",
+    hint: "Mistral Large, Codestral, Pixtral",
+    logoDomain: "mistral.ai",
+    baseUrl: "https://api.mistral.ai/v1",
+    jsonMode: "native",
+    headersJson: "",
+    keyUrl: "https://console.mistral.ai/api-keys",
+  },
+  {
+    type: "openai-compatible",
+    name: "xAI",
+    hint: "Grok 3, Grok 2",
+    logoDomain: "x.ai",
+    baseUrl: "https://api.x.ai/v1",
+    jsonMode: "native",
+    headersJson: "",
+    keyUrl: "https://console.x.ai",
+  },
+  {
+    type: "openai-compatible",
     name: "OpenRouter",
-    hint: "Unified API for 200+ models",
+    hint: "Auto-route to 300+ models",
     logoDomain: "openrouter.ai",
     baseUrl: "https://openrouter.ai/api/v1",
     jsonMode: "native",
@@ -67,10 +104,8 @@ export default function AddProviderModal(props: AddProviderModalProps) {
 
   // Form state
   const [name, setName] = createSignal("");
-  const [type, setType] = createSignal<Provider>("openai-compatible");
   const [baseUrl, setBaseUrl] = createSignal("https://api.openai.com/v1");
   const [apiKey, setApiKey] = createSignal("");
-  const [jsonMode, setJsonMode] = createSignal<JsonMode>("native");
   const [headersJson, setHeadersJson] = createSignal("");
   const [keyUrl, setKeyUrl] = createSignal("");
 
@@ -80,10 +115,8 @@ export default function AddProviderModal(props: AddProviderModalProps) {
       setStep("pick");
       setDirection("forward");
       setName("");
-      setType("openai-compatible");
       setBaseUrl("https://api.openai.com/v1");
       setApiKey("");
-      setJsonMode("native");
       setHeadersJson("");
       setKeyUrl("");
     }
@@ -91,9 +124,7 @@ export default function AddProviderModal(props: AddProviderModalProps) {
 
   const selectPreset = (preset: ProviderPreset) => {
     setName(preset.name);
-    setType(preset.type);
     setBaseUrl(preset.baseUrl);
-    setJsonMode(preset.jsonMode);
     setHeadersJson(preset.headersJson);
     setKeyUrl(preset.keyUrl);
     setDirection("forward");
@@ -102,10 +133,8 @@ export default function AddProviderModal(props: AddProviderModalProps) {
 
   const selectCustom = () => {
     setName("");
-    setType("openai-compatible");
     setBaseUrl("");
     setApiKey("");
-    setJsonMode("native");
     setHeadersJson("");
     setKeyUrl("");
     setDirection("forward");
@@ -118,12 +147,13 @@ export default function AddProviderModal(props: AddProviderModalProps) {
   };
 
   const handleAdd = () => {
+    const inferred = inferProviderType(baseUrl());
     props.onAdd({
       name: name(),
-      type: type(),
+      type: inferred.type,
       baseUrl: baseUrl(),
       apiKey: apiKey(),
-      jsonMode: jsonMode(),
+      jsonMode: inferred.jsonMode,
       headersJson: headersJson(),
     });
     props.onClose();

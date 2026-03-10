@@ -10,10 +10,20 @@ import type {
   ConfigState,
   EvalModel,
   HydratedModel,
+  JsonMode,
+  Provider,
   PromptCase,
   ProviderConfig,
   StatusTone,
 } from "./types";
+
+/** Infer provider type and JSON mode from a base URL. */
+function inferProviderType(baseUrl: string): { type: Provider; jsonMode: JsonMode } {
+  if (/anthropic\.com/i.test(baseUrl)) {
+    return { type: "anthropic", jsonMode: "prompt-only" };
+  }
+  return { type: "openai-compatible", jsonMode: "native" };
+}
 
 function createId() {
   return crypto.randomUUID();
@@ -95,7 +105,12 @@ export function AppStoreProvider(props: ParentProps) {
     value: ProviderConfig[K],
   ) => {
     const index = config.providers.findIndex((p) => p.id === id);
-    if (index >= 0) setConfig("providers", index, field, value);
+    if (index < 0) return;
+    setConfig("providers", index, field, value);
+    if (field === "baseUrl") {
+      const inferred = inferProviderType(value as string);
+      setConfig("providers", index, "type", inferred.type);
+    }
   };
 
   const addPromptCase = () => {
@@ -284,6 +299,28 @@ export function AppStoreProvider(props: ParentProps) {
     }
   };
 
+  const loadLocalPrompts = async () => {
+    try {
+      const response = await fetch("/api/local-prompts");
+      const payload = (await response.json()) as { prompts?: PromptCase[]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Failed to load local prompts");
+      const prompts = payload.prompts || [];
+      if (!prompts.length) {
+        setStatusState("No local prompts found in data/prompts.json", "warning");
+        return;
+      }
+      // Assign fresh IDs to avoid collisions with existing prompts
+      const withFreshIds = prompts.map((p) => ({ ...p, id: createId() }));
+      setConfig("promptCases", (items) => [...items, ...withFreshIds]);
+      setStatusState(`Loaded ${withFreshIds.length} local prompt(s)`, "success");
+    } catch (error) {
+      setStatusState(
+        error instanceof Error ? error.message : "Failed to load local prompts",
+        "danger",
+      );
+    }
+  };
+
   const fetchProviderModels = async (providerId: string): Promise<{ id: string; name: string }[]> => {
     const provider = getProvider(providerId);
     if (!provider) throw new Error("Provider not found");
@@ -329,6 +366,7 @@ export function AppStoreProvider(props: ParentProps) {
     exportConfig,
     exportResults,
     runBatch,
+    loadLocalPrompts,
     fetchProviderModels,
     getProvider,
     modelsForProvider,

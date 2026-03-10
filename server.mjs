@@ -1,4 +1,9 @@
 import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
@@ -333,11 +338,11 @@ function computeScore({ outputText, parseOk, issues }) {
 }
 
 function createAbortSignal(timeoutMs) {
-  const timeout = Math.max(1000, Number(timeoutMs) || 90000);
+  const timeout = Math.max(1000, Number(timeoutMs) || 120000);
   return AbortSignal.timeout(timeout);
 }
 
-async function runOpenAiCompatible(model, prompt, settings) {
+async function runOpenAiCompatible(model, prompt, settings, { omitTemperature = false } = {}) {
   if (!String(model.apiKey || "").trim()) {
     throw new Error("Missing API key");
   }
@@ -359,11 +364,14 @@ async function runOpenAiCompatible(model, prompt, settings) {
   }
   messages.push({ role: "user", content: prompt.userPrompt });
 
+  const maxTokens = Number(settings.maxTokens) || 0;
+  const temperature = Number(settings.temperature ?? 0);
+
   const body = {
     model: String(model.model).trim(),
     messages,
-    temperature: Number(settings.temperature ?? 0.4),
-    max_tokens: Number(settings.maxTokens ?? 1600),
+    ...(!omitTemperature && { temperature }),
+    ...(maxTokens > 0 && { max_completion_tokens: maxTokens }),
   };
 
   if (model.jsonMode === "native") {
@@ -377,10 +385,83 @@ async function runOpenAiCompatible(model, prompt, settings) {
     signal: createAbortSignal(settings.timeoutMs),
   });
 
-  const data = await response.json().catch(async () => {
-    const fallbackText = await response.text();
-    throw new Error(`Invalid provider response: ${fallbackText.slice(0, 400)}`);
+  // Read body as text first, then parse — avoids "Body has already been read"
+  const rawBody = await response.text();
+  let data;
+  try {
+    data = JSON.parse(rawBody);
+  } catch {
+    throw new Error(`Invalid provider response: ${rawBody.slice(0, 400)}`);
+  }
+
+  if (!response.ok) {
+    const errorMessage = data?.error?.message || data?.message || `Provider error (${response.status})`;
+
+    // Retry once without temperature if the API rejects it
+    if (!omitTemperature && temperature !== 0 && /temperature/i.test(errorMessage)) {
+      return runOpenAiCompatible(model, prompt, settings, { omitTemperature: true });
+    }
+
+    // Fall back to legacy /v1/completions for non-chat models (e.g. gpt-5.x-pro)
+    if (/not a chat model/i.test(errorMessage)) {
+      return runOpenAiCompletions(model, prompt, settings);
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  const outputText = normalizeTextContent(data?.choices?.[0]?.message?.content);
+  const usage = data?.usage || null;
+
+  // Detect reasoning models that consumed all tokens internally
+  if (!outputText.trim() && usage?.completion_tokens_details?.reasoning_tokens > 0) {
+    throw new Error(
+      "Model used all tokens for reasoning with no visible output — try increasing max tokens",
+    );
+  }
+
+  return { endpoint, outputText, usage };
+}
+
+async function runOpenAiCompletions(model, prompt, settings) {
+  const endpoint = `${normalizeBaseUrl(model.baseUrl, "https://api.openai.com/v1")}/completions`;
+  const headers = {
+    authorization: `Bearer ${String(model.apiKey).trim()}`,
+    "content-type": "application/json",
+    ...safeParseHeaders(model.headersJson),
+  };
+
+  // Flatten system + user prompts into a single prompt string
+  const parts = [];
+  if (prompt.systemPrompt) {
+    parts.push(prompt.systemPrompt);
+  }
+  parts.push(prompt.userPrompt);
+
+  const maxTokens = Number(settings.maxTokens) || 16384;
+  const temperature = Number(settings.temperature ?? 0);
+
+  const body = {
+    model: String(model.model).trim(),
+    prompt: parts.join("\n\n"),
+    temperature,
+    max_tokens: maxTokens,
+  };
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+    signal: createAbortSignal(settings.timeoutMs),
   });
+
+  const rawBody = await response.text();
+  let data;
+  try {
+    data = JSON.parse(rawBody);
+  } catch {
+    throw new Error(`Invalid provider response: ${rawBody.slice(0, 400)}`);
+  }
 
   if (!response.ok) {
     throw new Error(data?.error?.message || data?.message || `Provider error (${response.status})`);
@@ -388,7 +469,7 @@ async function runOpenAiCompatible(model, prompt, settings) {
 
   return {
     endpoint,
-    outputText: normalizeTextContent(data?.choices?.[0]?.message?.content),
+    outputText: String(data?.choices?.[0]?.text || ""),
     usage: data?.usage || null,
   };
 }
@@ -413,8 +494,8 @@ async function runAnthropic(model, prompt, settings) {
   const body = {
     model: String(model.model).trim(),
     system: prompt.systemPrompt,
-    max_tokens: Number(settings.maxTokens ?? 1600),
-    temperature: Number(settings.temperature ?? 0.4),
+    max_tokens: Number(settings.maxTokens) || 16384,
+    temperature: Number(settings.temperature ?? 0),
     messages: [{ role: "user", content: prompt.userPrompt }],
   };
 
@@ -425,10 +506,14 @@ async function runAnthropic(model, prompt, settings) {
     signal: createAbortSignal(settings.timeoutMs),
   });
 
-  const data = await response.json().catch(async () => {
-    const fallbackText = await response.text();
-    throw new Error(`Invalid provider response: ${fallbackText.slice(0, 400)}`);
-  });
+  // Read body as text first, then parse — avoids "Body has already been read"
+  const rawBody = await response.text();
+  let data;
+  try {
+    data = JSON.parse(rawBody);
+  } catch {
+    throw new Error(`Invalid provider response: ${rawBody.slice(0, 400)}`);
+  }
 
   if (!response.ok) {
     throw new Error(data?.error?.message || data?.message || `Provider error (${response.status})`);
@@ -674,8 +759,34 @@ async function handleListModels(request, response) {
   sendJson(response, 200, { models });
 }
 
+async function handleLocalPrompts(_request, response) {
+  const filePath = join(__dirname, "data", "prompts.json");
+  try {
+    const raw = await readFile(filePath, "utf8");
+    const prompts = JSON.parse(raw);
+    sendJson(response, 200, { prompts: Array.isArray(prompts) ? prompts : [] });
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      sendJson(response, 200, { prompts: [] });
+    } else {
+      sendJson(response, 500, { error: error.message || "Failed to read local prompts" });
+    }
+  }
+}
+
 async function requestHandler(request, response) {
   const url = new URL(request.url || "/", "http://localhost");
+
+  if (request.method === "GET" && url.pathname === "/api/local-prompts") {
+    try {
+      await handleLocalPrompts(request, response);
+    } catch (error) {
+      sendJson(response, 500, {
+        error: error.message || "Failed to read local prompts",
+      });
+    }
+    return;
+  }
 
   if (request.method === "GET" && url.pathname === "/api/health") {
     sendJson(response, 200, {

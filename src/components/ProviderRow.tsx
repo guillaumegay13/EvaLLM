@@ -1,6 +1,6 @@
 import { createSignal, For, Show } from "solid-js";
 import { useAppStore } from "../lib/store";
-import type { JsonMode, Provider, ProviderConfig } from "../lib/types";
+import type { JsonMode, ProviderConfig } from "../lib/types";
 import AddModelModal from "./AddModelModal";
 
 interface ProviderRowProps {
@@ -108,7 +108,7 @@ export default function ProviderRow(props: ProviderRowProps) {
           >
             {fetching() ? "Fetching..." : "Fetch models"}
           </button>
-          <button class="button primary" type="button" onClick={() => setShowAddModel(true)}>
+          <button class="button ghost" type="button" onClick={() => setShowAddModel(true)}>
             Add model manually
           </button>
         </div>
@@ -153,28 +153,14 @@ export default function ProviderRow(props: ProviderRowProps) {
       <Show when={editing()}>
         <div class="table-row-body">
           <div class="editor-body">
-            <div class="grid two">
-              <label class="field">
-                <span>Provider name</span>
-                <input
-                  type="text"
-                  value={props.provider.name}
-                  onInput={(e) => store.updateProvider(props.provider.id, "name", e.currentTarget.value)}
-                />
-              </label>
-              <label class="field">
-                <span>Type</span>
-                <select
-                  value={props.provider.type}
-                  onChange={(e) =>
-                    store.updateProvider(props.provider.id, "type", e.currentTarget.value as Provider)
-                  }
-                >
-                  <option value="openai-compatible">OpenAI-compatible</option>
-                  <option value="anthropic">Anthropic</option>
-                </select>
-              </label>
-            </div>
+            <label class="field">
+              <span>Provider name</span>
+              <input
+                type="text"
+                value={props.provider.name}
+                onInput={(e) => store.updateProvider(props.provider.id, "name", e.currentTarget.value)}
+              />
+            </label>
 
             <label class="field">
               <span>Base URL</span>
@@ -198,24 +184,22 @@ export default function ProviderRow(props: ProviderRowProps) {
               />
             </label>
 
-            <div class="grid two">
-              <label class="field">
-                <span>JSON mode</span>
-                <select
-                  value={props.provider.jsonMode}
-                  onChange={(e) =>
-                    store.updateProvider(
-                      props.provider.id,
-                      "jsonMode",
-                      e.currentTarget.value as JsonMode,
-                    )
-                  }
-                >
-                  <option value="native">Native JSON mode</option>
-                  <option value="prompt-only">Prompt only</option>
-                </select>
-              </label>
-            </div>
+            <label class="field">
+              <span>JSON mode</span>
+              <select
+                value={props.provider.jsonMode}
+                onChange={(e) =>
+                  store.updateProvider(
+                    props.provider.id,
+                    "jsonMode",
+                    e.currentTarget.value as JsonMode,
+                  )
+                }
+              >
+                <option value="native">Native JSON mode</option>
+                <option value="prompt-only">Prompt only</option>
+              </select>
+            </label>
 
             <label class="field">
               <span>Custom headers JSON</span>

@@ -15,7 +15,14 @@ export default function PromptCaseCard(props: PromptCaseCardProps) {
           <h3>{props.promptCase.name || "Untitled prompt"}</h3>
           <p class="editor-meta">prompt</p>
         </div>
-        <span class={`status-chip ${props.promptCase.enabled ? "live" : "muted"}`}>
+        <span
+          class={`status-chip ${props.promptCase.enabled ? "live" : "muted"}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            props.onUpdate("enabled", !props.promptCase.enabled);
+          }}
+        >
           {props.promptCase.enabled ? "Enabled" : "Disabled"}
         </span>
       </summary>
@@ -27,15 +34,6 @@ export default function PromptCaseCard(props: PromptCaseCardProps) {
             type="text"
             value={props.promptCase.name}
             onInput={(event) => props.onUpdate("name", event.currentTarget.value)}
-          />
-        </label>
-
-        <label class="field inline-toggle">
-          <span>Include in next run</span>
-          <input
-            type="checkbox"
-            checked={props.promptCase.enabled}
-            onChange={(event) => props.onUpdate("enabled", event.currentTarget.checked)}
           />
         </label>
 

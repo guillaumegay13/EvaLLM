@@ -194,9 +194,9 @@ export function createDefaultModels(): EvalModel[] {
 export function createDefaultConfig(): ConfigState {
   return {
     settings: {
-      temperature: 0.4,
-      maxTokens: 1400,
-      timeoutMs: 90000,
+      temperature: 0,
+      maxTokens: 0,
+      timeoutMs: 120000,
       strictJson: true,
     },
     providers: createDefaultProviders(),
