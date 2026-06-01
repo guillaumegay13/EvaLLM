@@ -1,0 +1,23 @@
+src/components/AddProviderModal.tsx
+  s_69e0e90ab2ef61::t_1ef7cd5e9d0315 81-88
+README.md
+  s_69e0e90ab2ef61::t_9abe7ad18aa830 26
+src/lib/defaults.ts
+  s_69e0e90ab2ef61::t_f777eaba494d3b 12,176-184,226-231
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "149a0d4aec14574f73bd7eb7b20f4e78c58cf4f5",
+  "prompts": {},
+  "sessions": {
+    "s_69e0e90ab2ef61": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e824b-c9e8-7773-89ab-44d74d289047",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}
