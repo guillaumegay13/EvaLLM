@@ -9,6 +9,7 @@ const DEFAULT_OPENAI_PROVIDER_ID = "default-openai";
 const DEFAULT_ANTHROPIC_PROVIDER_ID = "default-anthropic";
 const DEFAULT_GEMINI_PROVIDER_ID = "default-gemini";
 const DEFAULT_OPENROUTER_PROVIDER_ID = "default-openrouter";
+const DEFAULT_KIMI_CODE_PROVIDER_ID = "default-kimi-code";
 
 export const sessionSchema = {
   type: "object",
@@ -172,6 +173,15 @@ export function createDefaultProviders(): ProviderConfig[] {
         2,
       ),
     },
+    {
+      id: DEFAULT_KIMI_CODE_PROVIDER_ID,
+      name: "Kimi Code",
+      type: "openai-compatible",
+      baseUrl: "https://api.kimi.com/coding/v1",
+      apiKey: "",
+      jsonMode: "native",
+      headersJson: "",
+    },
   ];
 }
 
@@ -212,6 +222,13 @@ export function createDefaultModels(): EvalModel[] {
       model: "openai/gpt-4.1-mini",
       inputPrice: 0.4,
       outputPrice: 1.6,
+    },
+    {
+      id: createId(),
+      enabled: false,
+      name: "Kimi Code",
+      providerId: DEFAULT_KIMI_CODE_PROVIDER_ID,
+      model: "kimi-for-coding",
     },
   ];
 }

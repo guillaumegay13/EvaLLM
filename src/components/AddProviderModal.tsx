@@ -78,6 +78,16 @@ const PRESETS: ProviderPreset[] = [
   },
   {
     type: "openai-compatible",
+    name: "Kimi Code",
+    hint: "Subscription API, kimi-for-coding",
+    logoDomain: "kimi.com",
+    baseUrl: "https://api.kimi.com/coding/v1",
+    jsonMode: "native",
+    headersJson: "",
+    keyUrl: "https://www.kimi.com/code/console",
+  },
+  {
+    type: "openai-compatible",
     name: "Mistral AI",
     hint: "Mistral Large, Codestral, Pixtral",
     logoDomain: "mistral.ai",

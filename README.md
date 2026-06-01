@@ -23,6 +23,7 @@ Small local-first bench for evaluating JSON outputs from multiple LLMs on the sa
 - OpenAI-compatible chat completion APIs
   - OpenAI
   - OpenRouter
+  - Kimi Code subscription
   - Groq
   - Together
   - similar providers exposing `POST /chat/completions`
